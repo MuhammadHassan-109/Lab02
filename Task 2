@@ -1,0 +1,290 @@
+#pragma once
+
+using namespace std;
+
+template <class Student>
+class studentStack
+{
+private:
+	int top;
+	int maxStack;
+	Student* items;
+public:
+	studentStack();
+	studentStack(int max);
+	~studentStack();
+	bool isEmpty() const;
+	bool isFull() const;
+	void Push(Student newItem);
+	void Pop(Student& item);
+};
+
+•	Class Template Implementation (Stack.cpp)
+#include "Stack.h"
+using namespace std;
+template <class Student>
+studentStack<Student>::studentStack()
+{
+	top = -1;
+	maxStack = 5;
+	items = new Student[500];
+}
+
+template <class Student>
+studentStack<Student>::studentStack(int max)
+{
+	top = -1;
+	maxStack = max;
+	items = new Student[max];
+}
+
+template <class Student>
+studentStack<Student>::~studentStack()
+{
+	delete[] items;
+}
+
+template <class Student>
+bool studentStack<Student>::isEmpty() const
+{
+	return top == -1;
+}
+
+template <class Student>
+bool studentStack<Student>::isFull() const
+{
+	return top == maxStack - 1;
+}
+
+template <class Student>
+void studentStack<Student>::Push(Student newItem)
+{
+	if (isFull())
+	{
+		throw "\nStack Overflow";
+	}
+	else
+	{
+		top++;
+		items[top] = newItem;
+	}
+}
+
+template <class Student>
+void studentStack<Student>::Pop(Student& item)
+{
+	if (isEmpty())
+	{
+		throw "\nStack Underflow";
+	}
+	else
+	{
+		item = items[top];
+		top--;
+	}
+}
+•	Student Class Definition (Student class.h)
+#pragma once
+#include <vector>
+#include <iostream>
+#include <string>
+
+class Student
+{
+private:
+    std::string firstName;
+    std::string lastName;
+    std::vector<int> grades;
+    double average;
+public:
+    Student();
+
+    void setName(const std::string& first, const std::string& last);
+
+    void setGrades(const std::vector<int>& g);
+
+    void computeAverage();
+
+    std::string getFullName() const;
+
+    void printInfo() const;
+
+    bool matchesName(const std::string& first, const std::string& last) const;
+};
+
+•	Student Class Implementation (Student Class.cpp)
+#include "Student Class.h"
+
+Student::Student() : average(0.0) {}
+
+void Student::setName(const std::string& first, const std::string& last)
+{
+    firstName = first;
+    lastName = last;
+}
+
+void Student::setGrades(const std::vector<int>& g)
+{
+    grades = g;
+}
+
+void Student::computeAverage()
+{
+    int sum = 0;
+    for (int grade : grades)
+    {
+        sum += grade;
+    }
+    average = (!grades.empty()) ? (double)sum / grades.size() : 0.0;
+}
+
+std::string Student::getFullName() const
+{
+    return firstName + " " + lastName;
+}
+
+void Student::printInfo() const
+{
+    std::cout << firstName << " " << lastName << " ";
+    for (int grade : grades)
+    {
+        std::cout << grade << " ";
+    }
+    std::cout << "Average: " << average << std::endl;
+}
+
+bool Student::matchesName(const std::string& first, const std::string& last) const
+{
+    return (firstName == first && lastName == last);
+}
+
+
+
+
+
+•	Driver program (Driver.cpp)
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "Stack.cpp"
+#include "Student Class.h"
+using namespace std;
+
+int main()
+{
+    string filename;
+    cout << "Enter filename: ";
+    cin >> filename;
+
+    int numStudents, numGrades;
+    cout << "Enter number of students: ";
+    cin >> numStudents;
+    cout << "Enter number of grades per student: ";
+    cin >> numGrades;
+    cin.ignore();
+
+    ifstream fin(filename);
+    if (!fin)
+    {
+        cout << "Error opening file." << endl;
+        return 1;
+    }
+
+    studentStack<Student> students(numStudents);
+
+    for (int i = 0; i < numStudents; i++)
+    {
+        string line;
+        if (!getline(fin, line)) {
+            cout << "Not enough lines in file for all students." << endl;
+            break;
+        }
+        istringstream iss(line);
+        string first, last;
+        iss >> first >> last;
+        vector<int> grades(numGrades);
+        for (int j = 0; j < numGrades; j++)
+        {
+            iss >> grades[j];
+        }
+        Student s;
+        s.setName(first, last);
+        s.setGrades(grades);
+        s.computeAverage();
+        students.Push(s);
+    }
+    fin.close();
+
+    int choice;
+    do
+    {
+        cout << "\nMenu:\n"
+            << "1. Print all usernames, all grades, and averages.\n"
+            << "2. Find a student and print his/her information.\n"
+            << "3. Quit.\n"
+            << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore();
+
+        if (choice == 1)
+        {
+            Student* tempArr = new Student[numStudents];
+            for (int i = 0; i < numStudents; i++)
+            {
+                students.Pop(tempArr[i]);
+            }
+            for (int i = numStudents - 1; i >= 0; i--)
+            {
+                tempArr[i].printInfo();
+            }
+            for (int i = 0; i < numStudents; i++)
+            {
+                students.Push(tempArr[i]);
+            }
+            delete[] tempArr;
+        }
+        else if (choice == 2)
+        {
+            string first, last;
+            cout << "Enter student's first name: ";
+            cin >> first;
+            cout << "Enter student's last name: ";
+            cin >> last;
+
+            Student* tempArr = new Student[numStudents];
+            for (int i = 0; i < numStudents; i++)
+            {
+                students.Pop(tempArr[i]);
+            }
+            bool found = false;
+            for (int i = numStudents - 1; i >= 0; i--)
+            {
+                if (tempArr[i].matchesName(first, last))
+                {
+                    tempArr[i].printInfo();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                cout << "Student not found." << endl;
+            }
+            for (int i = 0; i < numStudents; i++)
+            {
+                students.Push(tempArr[i]);
+            }
+            delete[] tempArr;
+        }
+        else if (choice == 3)
+        {
+            cout << "Exiting program." << endl;
+        }
+        else
+        {
+            cout << "Invalid choice. Try again." << endl;
+        }
+    } while (choice != 3);
+
