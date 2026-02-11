@@ -1,0 +1,96 @@
+#include <iostream>
+#include "Stack.cpp"
+using namespace std;
+
+
+
+int main()
+{
+	int stackSize;
+	int x;
+
+	cout << "How many numbers you want to store: ";
+	cin >> stackSize;
+	int* originalNumbers = new int[stackSize];
+	for (int i = 0; i < stackSize; i++)
+	{
+		cout << "\nEnter number " << i + 1 << " : ";
+		cin >> x;
+		originalNumbers[i] = x;
+	}
+
+	int choice, num;
+	while (true)
+	{
+		// after each execution of this loop the stack is to be refilled because all the data is popped in the previous iteration
+		DynamicStack<int> Numbers(stackSize);
+		for (int i = 0; i < stackSize; i++)
+		{
+			Numbers.Push(originalNumbers[i]);
+		}
+
+		cout << "\nWhat do you want to do with these numbers : "
+			<< "\n1. Show all numbers"
+			<< "\n2. Find Maximum Value"
+			<< "\n3. Find minimum value"
+			<< "\n4. Quit program : ";
+		cin >> choice;
+		switch (choice)
+		{
+		case 1:
+		{
+			//This part is optional i did this to regain the order of numbers reversed by LIFO property of stack
+			int* arr = new int[stackSize];
+			for (int i = 0; i < stackSize; i++)
+			{
+				Numbers.Pop(arr[i]);
+			}
+			for (int i = stackSize - 1; i >= 0; i--)
+			{
+				cout << "\nNumber " << stackSize - i << " : " << arr[i];
+			}
+			delete[] arr;
+			break;
+		}
+		// b part
+		case 2:
+		{
+			int maximum;
+			Numbers.Pop(maximum);
+			for (int i = 1; i < stackSize; i++)
+			{
+				Numbers.Pop(num);
+				if (num > maximum)
+				{
+					maximum = num;
+				}
+			}
+			cout << "\nMaximum value : " << maximum;
+			break;
+		}
+		case 3:
+		{
+			int minimum;
+			Numbers.Pop(minimum);
+			for (int i = 1; i < stackSize; i++)
+			{
+				Numbers.Pop(num);
+				if (num < minimum)
+				{
+					minimum = num;
+				}
+			}
+			cout << "\nMinimum value : " << minimum;
+			break;
+		}
+		case 4:
+			delete[] originalNumbers;
+			exit(0);
+			break;
+		default:
+			cout << "\nInvalid choice. Please try again.";
+			break;
+		}
+	}
+	return 0;
+}
